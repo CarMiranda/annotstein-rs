@@ -1,6 +1,9 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::io::BufReader;
+use std::fs::File;
+use std::path::Path;
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Image {
@@ -115,4 +118,36 @@ impl Dataset {
             licenses,
         }
     }
+
+    fn validate_images(&self) -> Result<bool, std::io::Error> {
+        Ok(true)
+    }
+
+    fn validate_annotations(&self) -> Result<bool, std::io::Error> {
+        Ok(true)
+    }
+
+    fn validate_categories(&self) -> Result<bool, std::io::Error> {
+        Ok(true)
+    }
+
+    pub fn validate(&self) -> Result<bool, std::io::Error> {
+        if let Err(e) = self.validate_images() {
+            return Err(e);
+        }
+        if let Err(e) = self.validate_annotations() {
+            return Err(e);
+        };
+        self.validate_categories()
+    }
+	
+	pub fn parse_file<P: AsRef<Path>>(path: P) -> Result<Self, std::io::Error> {
+		let file = File::open(path)?;
+		let reader = BufReader::new(file);
+		let ds = serde_json::from_reader(reader)?;
+		
+		Ok(ds)
+	}
+
+	pub fn dump_file() {}
 }
