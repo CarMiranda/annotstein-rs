@@ -1,6 +1,6 @@
 use crate::coco::models;
 use std::collections::HashSet;
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 
 pub fn merge_drain(mut datasets: Vec<models::Dataset>) -> models::Dataset {
     let mut images: Vec<models::Image> = Vec::new();
@@ -47,10 +47,11 @@ pub fn merge_clone(datasets: Vec<models::Dataset>) -> models::Dataset {
 }
 
 impl models::Dataset {
-    pub fn rebase(&mut self, base_path: PathBuf) -> () {
+    pub fn rebase<P: AsRef<Path>>(&mut self, base_path: P) -> () {
         for i in self.images.iter_mut() {
-            i.file_name = base_path
-                .join(PathBuf::from(i.file_name.clone()))
+            i.file_name = base_path.as_ref()
+                .join(i.file_name.clone())
+                .iter().collect::<PathBuf>()
                 .as_os_str()
                 .to_str()
                 .expect("")

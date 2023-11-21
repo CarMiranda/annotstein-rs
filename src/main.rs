@@ -29,7 +29,6 @@ enum Commands {
 	/// Rebase image filename
 	Rebase {
 		root_path: PathBuf,
-		flatten: bool,
 	},
 }
 
@@ -37,14 +36,24 @@ fn main() {
     let cli = Cli::parse();
 	match &cli.command {
 		Commands::Validate => {
-			let ds = coco::models::Dataset::parse_file(cli.infile).unwrap();
-			let _ = ds.validate();
+			match coco::models::Dataset::parse_file(cli.infile) {
+                Err(e) => println!("Error parsing file: {}", e),
+                Ok(ds) => {
+                    let _ = ds.validate();
+                }
+            }
 		},
-		Commands::Rebase { root_path, flatten } => {
-			let mut ds = coco::models::Dataset::parse_file(cli.infile).unwrap();
-			for image in ds.images.iter_mut() {
-				image.file_name = root_path.to_str().unwrap().to_string();
-			}
+		Commands::Rebase { root_path } => {
+			match coco::models::Dataset::parse_file(cli.infile) {
+                Err(e) => println!("Error parsing file: {}", e),
+                Ok(mut ds) => {
+                    ds.rebase(root_path);
+                    if let Some(output_path) = &cli.outfile {
+                        let _ = ds.dump_file(output_path);
+                    }
+                }
+            }
 		},
 	}
+
 }
