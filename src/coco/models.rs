@@ -146,8 +146,10 @@ impl Dataset {
 		let reader = BufReader::new(file);
 		let ds = serde_json::from_reader(reader)?;
 		
-		Ok(ds)
+	    Ok(ds)
 	}
 
-	pub fn dump_file() {}
+	pub fn dump_file<P: AsRef<Path>>(&self, path: P) -> Result<(), std::io::Error> {
+        std::fs::write(path, serde_json::to_string_pretty(&self).unwrap())
+    }
 }
